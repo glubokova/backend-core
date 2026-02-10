@@ -37,11 +37,14 @@ public class Lead {
         return status;
     }
 
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Lead lead = (Lead) o;
         return Objects.equals(id, lead.id);
     }
@@ -53,8 +56,8 @@ public class Lead {
 
     @Override
     public String toString() {
-        return "Lead{id='" + id + "', email ='" + email +
-                "', phone =" + phone + "', company =" + company +
-                "', status =" + status + "'}";
+        return "Lead{id='" + id + "', email ='" + email
+                +  "', phone =" + phone + "', company =" + company
+                + "', status =" + status + "'}";
     }
 }
