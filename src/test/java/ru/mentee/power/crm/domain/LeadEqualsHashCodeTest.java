@@ -1,11 +1,10 @@
 package ru.mentee.power.crm.domain;
 
-
 import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class LeadEqualsHashCodeTest {
 
@@ -50,7 +49,7 @@ class LeadEqualsHashCodeTest {
     }
 
     @Test
-    void shouldHaveSameHashCode_WhenObjectsAreEqual() {
+    void shouldHaveSameHashCodeWhenObjectsAreEqual() {
         Lead firstLead = new Lead("1", "ivan@mail.ru", "+7123", "TechCorp", "NEW");
         Lead secondLead = new Lead("1", "ivan@mail.ru", "+7123", "TechCorp", "NEW");
         assertThat(firstLead).isEqualTo(secondLead);
