@@ -2,17 +2,25 @@ package ru.mentee.power.crm.storage;
 
 import org.junit.jupiter.api.Test;
 import ru.mentee.power.crm.domain.Lead;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import java.util.UUID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
 
 class LeadStorageTest {
 
     @Test
     void shouldAddLeadWhenLeadIsUnique() {
         LeadStorage storage = new LeadStorage();
-        Lead uniqueLead = new Lead("1", "ivan@mail.ru", "+7123", "TechCorp", "NEW");
+        Lead uniqueLead = new Lead(
+                UUID.randomUUID(),
+                "ivan@mail.ru",
+                "+7123",
+                "TechCorp",
+                "NEW"
+        );
 
         boolean added = storage.add(uniqueLead);
+
         assertThat(added).isTrue();
         assertThat(storage.size()).isEqualTo(1);
         assertThat(storage.findAll()).containsExactly(uniqueLead);
@@ -21,11 +29,27 @@ class LeadStorageTest {
     @Test
     void shouldRejectDuplicateWhenEmailAlreadyExists() {
         LeadStorage storage = new LeadStorage();
-        Lead existingLead = new Lead("1", "ivan@mail.ru", "+7123", "TechCorp", "NEW");
-        Lead duplicateLead = new Lead("2", "ivan@mail.ru", "+7456", "Other", "NEW");
+
+        Lead existingLead = new Lead(
+                UUID.randomUUID(),
+                "ivan@mail.ru",
+                "+7123",
+                "TechCorp",
+                "NEW"
+        );
+
+        Lead duplicateLead = new Lead(
+                UUID.randomUUID(),
+                "ivan@mail.ru", // тот же email
+                "+7456",
+                "Other",
+                "NEW"
+        );
+
         storage.add(existingLead);
 
         boolean added = storage.add(duplicateLead);
+
         assertThat(added).isFalse();
         assertThat(storage.size()).isEqualTo(1);
         assertThat(storage.findAll()).containsExactly(existingLead);
@@ -34,12 +58,24 @@ class LeadStorageTest {
     @Test
     void shouldThrowExceptionWhenStorageIsFull() {
         LeadStorage storage = new LeadStorage();
+
         for (int index = 0; index < 100; index++) {
-            storage.add(new Lead(String.valueOf(index), "lead" + index + "@mail.ru", "+7000",
-                    "Company", "NEW"));
+            storage.add(new Lead(
+                    UUID.randomUUID(),
+                    "lead" + index + "@mail.ru",
+                    "+7000",
+                    "Company",
+                    "NEW"
+            ));
         }
 
-        Lead hundredFirstLead = new Lead("101", "lead101@mail.ru", "+7001", "Company", "NEW");
+        Lead hundredFirstLead = new Lead(
+                UUID.randomUUID(),
+                "lead101@mail.ru",
+                "+7001",
+                "Company",
+                "NEW"
+        );
 
         assertThatThrownBy(() -> storage.add(hundredFirstLead))
                 .isInstanceOf(IllegalStateException.class)
@@ -49,8 +85,23 @@ class LeadStorageTest {
     @Test
     void shouldReturnOnlyAddedLeadsWhenFindAllCalled() {
         LeadStorage storage = new LeadStorage();
-        Lead firstLead = new Lead("1", "ivan@mail.ru", "+7123", "TechCorp", "NEW");
-        Lead secondLead = new Lead("2", "maria@startup.io", "+7456", "StartupLab", "NEW");
+
+        Lead firstLead = new Lead(
+                UUID.randomUUID(),
+                "ivan@mail.ru",
+                "+7123",
+                "TechCorp",
+                "NEW"
+        );
+
+        Lead secondLead = new Lead(
+                UUID.randomUUID(),
+                "maria@startup.io",
+                "+7456",
+                "StartupLab",
+                "NEW"
+        );
+
         storage.add(firstLead);
         storage.add(secondLead);
 
