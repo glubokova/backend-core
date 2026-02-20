@@ -1,25 +1,35 @@
 package ru.mentee.power.crm.storage;
 
+import java.util.Objects;
+
 import ru.mentee.power.crm.domain.Lead;
 
 public class LeadStorage {
-    private Lead[] leads = new Lead[100];
+    private static final int CAPACITY = 100;
+    private Lead[] leads = new Lead[CAPACITY];
+    private int size = 0;
 
     public boolean add(Lead lead) {
-        for (int i = 0; i < leads.length; i++) {
-            if (leads[i] != null && leads[i].email().equals(lead.email())) {
+        if (size >= CAPACITY) {
+            throw new IllegalStateException("Storage is full");
+        }
+
+        String email = lead.contact().email();
+
+        for (int i = 0; i < size; i++) {
+            String existingEmail = leads[i].contact().email();
+
+            if (email == null && existingEmail == null) {
+                return false;
+            }
+
+            if (email != null && email.equals(existingEmail)) {
                 return false;
             }
         }
 
-        for (int i = 0; i < leads.length; i++) {
-            if (leads[i] == null) {
-                leads[i] = lead;
-                return true;
-            }
-        }
-
-        throw new IllegalStateException("Storage is full");
+        leads[size++] = lead;
+        return true;
     }
 
     public Lead[] findAll() {
