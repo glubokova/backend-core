@@ -96,6 +96,7 @@ class LeadRepositoryTest {
 
         Lead target = new Lead(UUID.randomUUID(), contact, "TechCorp", "NEW");
 
+
         for (int i = 0; i < size; i++) {
             Lead lead = new Lead(UUID.randomUUID(), contact, "TechCorp", "NEW");
             hashSet.add(lead);
