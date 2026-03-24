@@ -5,8 +5,7 @@ import java.util.UUID;
 public record Lead(
         UUID id,
         String email,
-        String phone,
         String company,
-        String status
+        LeadStatus status
 ) {
 }

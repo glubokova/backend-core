@@ -1,9 +1,9 @@
 package ru.mentee.power.crm.repository;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.mentee.power.crm.domain.Address;
-import ru.mentee.power.crm.domain.Contact;
-import ru.mentee.power.crm.domain.Lead;
+import ru.mentee.power.crm.model.Lead;
+import ru.mentee.power.crm.model.LeadStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,59 +13,70 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class InMemoryLeadRepositoryTest {
 
-    private Lead createLead(UUID id) {
-        Address address = new Address("Moscow", "Lenina 1", "101000");
-        Contact contact = new Contact("test@mail.ru", "+7123", address);
-        return new Lead(id, contact, "TechCorp", "NEW");
+    private InMemoryLeadRepository repository;
+
+    @BeforeEach
+    void setUp() {
+        repository = new InMemoryLeadRepository();
+    }
+
+    private Lead createLead(String email) {
+        return new Lead(
+                UUID.randomUUID(),
+                email,
+                "TechCorp",
+                LeadStatus.NEW
+        );
     }
 
     @Test
-    void shouldAddUniqueLead() {
-        InMemoryLeadRepository repository = new InMemoryLeadRepository();
-        Lead firstLead = createLead(UUID.randomUUID());
-        repository.add(firstLead);
-        assertThat(repository.findAll()).hasSize(1);
-        assertThat(repository.findById(firstLead.id()))
-                .isEqualTo(Optional.of(firstLead));
+    void shouldSaveAndFindById() {
+        Lead lead = createLead("test@mail.com");
+
+        repository.save(lead);
+
+        Optional<Lead> result = repository.findById(lead.id());
+
+        assertThat(result).isPresent();
+        assertThat(result.get().email()).isEqualTo("test@mail.com");
     }
 
     @Test
-    void shouldRejectDuplicate() {
-        InMemoryLeadRepository repository = new InMemoryLeadRepository();
-        UUID id = UUID.randomUUID();
-        Lead first = createLead(id);
-        Lead duplicate = createLead(id);
-        repository.add(first);
-        boolean added = repository.add(duplicate);
-        assertThat(added).isFalse();
-        assertThat(repository.findAll()).hasSize(1);
+    void shouldFindByEmail() {
+        Lead lead = createLead("email@test.com");
+
+        repository.save(lead);
+
+        Optional<Lead> result = repository.findByEmail("email@test.com");
+
+        assertThat(result).isPresent();
+        assertThat(result.get().company()).isEqualTo("TechCorp");
     }
 
     @Test
-    void shouldReturnEmptyWhenIdNotFound() {
-        InMemoryLeadRepository repository = new InMemoryLeadRepository();
-        Optional<Lead> result = repository.findById(UUID.randomUUID());
+    void shouldReturnEmptyWhenEmailNotFound() {
+        Optional<Lead> result = repository.findByEmail("nope@mail.com");
+
         assertThat(result).isEmpty();
     }
 
     @Test
-    void shouldRemoveExistingLead() {
-        InMemoryLeadRepository repository = new InMemoryLeadRepository();
-        UUID id = UUID.randomUUID();
-        Lead lead = createLead(id);
-        repository.add(lead);
-        repository.remove(id);
-        assertThat(repository.findAll()).hasSize(0);
-        assertThat(repository.findById(id)).isEmpty();
+    void shouldFindAll() {
+        repository.save(createLead("one@mail.com"));
+        repository.save(createLead("two@mail.com"));
+
+        List<Lead> result = repository.findAll();
+
+        assertThat(result).hasSize(2);
     }
 
     @Test
-    void shouldReturnDefensiveCopy() {
-        InMemoryLeadRepository repository = new InMemoryLeadRepository();
-        Lead lead = createLead(UUID.randomUUID());
-        repository.add(lead);
-        List<Lead> externalList = repository.findAll();
-        externalList.clear(); // клиент ломает список
-        assertThat(repository.findAll()).hasSize(1);
+    void shouldDeleteLead() {
+        Lead lead = createLead("delete@mail.com");
+
+        repository.save(lead);
+        repository.delete(lead.id());
+
+        assertThat(repository.findAll()).isEmpty();
     }
 }

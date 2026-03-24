@@ -2,12 +2,12 @@ package ru.mentee.power.crm.repository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.mentee.power.crm.domain.Address;
-import ru.mentee.power.crm.domain.Contact;
-import ru.mentee.power.crm.domain.Lead;
+import ru.mentee.power.crm.model.LeadStatus;
+import ru.mentee.power.crm.model.Lead;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,42 +17,44 @@ class LeadRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        leadRepository = new LeadRepository();
+        leadRepository = new InMemoryLeadRepository();
     }
 
     @Test
     void shouldSaveAndFindLeadByIdWhenLeadSaved() {
         UUID id = UUID.randomUUID();
-        Contact contact = new Contact("john@example@com", "+789", new Address("Moscow", "Lenina", "123456")
+        Lead lead = new Lead(
+                id,
+                "john@example.com",
+                "T",
+                LeadStatus.NEW
         );
 
-        Lead lead = new Lead(id, contact, "T", "NEW");
-
         leadRepository.save(lead);
-        Lead found = leadRepository.findById(id);
+        Optional<Lead> found = leadRepository.findById(id);
 
-        assertThat(found).isNotNull();
-        assertThat(found).isEqualTo(lead);
-        assertThat(leadRepository.size()).isEqualTo(1);
+        assertThat(found).isPresent();
+        assertThat(found.get()).isEqualTo(lead);
+        assertThat(leadRepository.findAll()).hasSize(1);
     }
 
     @Test
     void shouldReturnNullWhenLeadNotFound() {
         UUID unknownId = UUID.randomUUID();
-        Lead found = leadRepository.findById(unknownId);
-        assertThat(found).isNull();
+        Optional<Lead> found = leadRepository.findById(unknownId);
+        assertThat(found).isEmpty();
     }
 
     @Test
     void shouldReturnAllLeadsWhenMultipleLeadsSaved() {
         for (int i = 0; i < 3; i++) {
             UUID id = UUID.randomUUID();
-            Contact contact = new Contact(
+            Lead lead = new Lead(
+                    id,
                     "user" + i + "@mail.ru",
-                    "+789" + i,
-                    new Address("City" + i, "Street" + i, "ZIP" + 1)
+                    "Company" + i,
+                    LeadStatus.NEW
             );
-            Lead lead = new Lead(id, contact, "Company" + i, "NEW");
             leadRepository.save(lead);
         }
 
@@ -64,62 +66,94 @@ class LeadRepositoryTest {
     @Test
     void shouldDeleteLeadWhenLeadExists() {
         UUID id = UUID.randomUUID();
-        Contact contact = new Contact("@mail.ru", "+789", new Address("City", "Sol", "100010")
+        Lead lead = new Lead(
+                id,
+                "test@mail.com",
+                "TechCorp",
+                LeadStatus.NEW
         );
-        Lead lead = new Lead(id, contact, "TechCorp", "NEW");
         leadRepository.save(lead);
         leadRepository.delete(id);
 
-        assertThat(leadRepository.findById(id)).isNull();
-        assertThat(leadRepository.size()).isEqualTo(0);
+        Optional<Lead> found = leadRepository.findById(id);
+        assertThat(found).isEmpty();
+        assertThat(leadRepository.findAll()).hasSize(0);
     }
 
     @Test
     void shouldOverwriteLeadWhenSaveWithSameId() {
         UUID id = UUID.randomUUID();
-        Contact firstContact = new Contact(
+        Lead firstLead = new Lead(
+                id,
                 "first@mail.com",
-                "+789",
-                new Address("City1", "Street1", "ZIP1")
+                "FirstCompany",
+                LeadStatus.NEW
         );
-        Lead firstLead = new Lead(id, firstContact, "FirstCompany", "NEW");
 
-        Contact secondContact = new Contact(
+        Lead secondLead = new Lead(
+                id,
                 "second@mail.com",
-                "+789",
-                new Address("City2", "Street2", "ZIP2")
+                "SecondCompany",
+                LeadStatus.QUALIFIED
         );
-        Lead secondLead = new Lead(id, secondContact, "SecondCompany", "QUALIFIED");
 
         leadRepository.save(firstLead);
         leadRepository.save(secondLead);
 
-        Lead found = leadRepository.findById(id);
-        assertThat(found).isEqualTo(secondLead);
-        assertThat(leadRepository.size()).isEqualTo(1);
+        Optional<Lead> found = leadRepository.findById(id);
+        assertThat(found).isPresent();
+        assertThat(found.get()).isEqualTo(secondLead);
+        assertThat(leadRepository.findAll()).hasSize(1);
     }
 
     @Test
-    void shouldSaveBothLeadsEvenWithSameEmailBecauseRepositoryUsesUuidAsKey() {
-        Contact contact1 = new Contact(
+    void shouldSaveBothLeadsEvenWithSameEmailBecauseRepositoryDoesNotCheckBusinessRules() {
+        Lead lead1 = new Lead(
+                UUID.randomUUID(),
                 "ivan@mail.com",
-                "+79990000000",
-                new Address("Moscow", "Lenina 1", "101000")
+                "CompanyA",
+                LeadStatus.NEW
         );
 
-        Contact contact2 = new Contact(
+        Lead lead2 = new Lead(
+                UUID.randomUUID(),
                 "ivan@mail.com",
-                "+79990000000",
-                new Address("Moscow", "Lenina 1", "101000")
+                "CompanyB",
+                LeadStatus.CONTACTED
         );
-
-        Lead lead1 = new Lead(UUID.randomUUID(), contact1, "CompanyA", "NEW");
-        Lead lead2 = new Lead(UUID.randomUUID(), contact2, "CompanyB", "CONVERTED");
 
         leadRepository.save(lead1);
         leadRepository.save(lead2);
 
-        assertThat(leadRepository.size()).isEqualTo(2);
+        assertThat(leadRepository.findAll()).hasSize(2);
+
+        Optional<Lead> found1 = leadRepository.findByEmail("ivan@mail.com");
+        assertThat(found1).isPresent();
+        assertThat(found1.get().company()).isEqualTo("CompanyB");
+    }
+
+    @Test
+    void shouldFindLeadByEmail() {
+        UUID id = UUID.randomUUID();
+        Lead lead = new Lead(
+                id,
+                "search@example.com",
+                "Search Company",
+                LeadStatus.NEW
+        );
+
+        leadRepository.save(lead);
+        Optional<Lead> found = leadRepository.findByEmail("search@example.com");
+
+        assertThat(found).isPresent();
+        assertThat(found.get().id()).isEqualTo(id);
+        assertThat(found.get().company()).isEqualTo("Search Company");
+    }
+
+    @Test
+    void shouldReturnEmptyWhenEmailNotFound() {
+        Optional<Lead> found = leadRepository.findByEmail("nonexistent@example.com");
+        assertThat(found).isEmpty();
     }
 
     @Test
@@ -128,14 +162,12 @@ class LeadRepositoryTest {
 
         for (int i = 0; i < 10_000; i++) {
             UUID id = UUID.randomUUID();
-
-            Contact contact = new Contact(
+            Lead lead = new Lead(
+                    id,
                     "email" + i + "@test.com",
-                    "+7" + i,
-                    new Address("City" + i, "Street" + i, "ZIP" + i)
+                    "Company" + i,
+                    LeadStatus.NEW
             );
-
-            Lead lead = new Lead(id, contact, "Company" + i, "NEW");
 
             leadRepository.save(lead);
             leadList.add(lead);
@@ -151,7 +183,7 @@ class LeadRepositoryTest {
         }
 
         long mapStart = System.nanoTime();
-        Lead foundInMap = leadRepository.findById(targetId);
+        Optional<Lead> foundInMap = leadRepository.findById(targetId);
         long mapDuration = System.nanoTime() - mapStart;
 
         long listStart = System.nanoTime();
@@ -161,8 +193,8 @@ class LeadRepositoryTest {
                 .orElse(null);
         long listDuration = System.nanoTime() - listStart;
 
-        assertThat(foundInMap).isNotNull();
-        assertThat(foundInMap).isEqualTo(foundInList);
+        assertThat(foundInMap).isPresent();
+        assertThat(foundInMap.get()).isEqualTo(foundInList);
 
         assertThat(listDuration)
                 .isGreaterThan(mapDuration * 10);
@@ -170,17 +202,5 @@ class LeadRepositoryTest {
         System.out.println("Map поиск: " + mapDuration + " ns");
         System.out.println("List поиск: " + listDuration + " ns");
         System.out.println("Ускорение: " + (listDuration / mapDuration) + "x");
-    }
-
-    @Test
-    void shouldSaveBothLeadsEvenWithSameEmailAndPhoneBecauseRepositoryDoesNotCheckBusinessRules() {
-        Contact sharedContact = new Contact("ivan@mail.ru", "+79001234567",
-                new Address("Moscow", "Tverskaya 1", "101000"));
-        Lead originalLead = new Lead(UUID.randomUUID(), sharedContact, "Acme Corp", "NEW");
-        Lead duplicateLead = new Lead(UUID.randomUUID(), sharedContact, "TechCorp", "QUALIFIED");
-        leadRepository.save(originalLead);
-        leadRepository.save(duplicateLead);
-
-        assertThat(leadRepository.size()).isEqualTo(2);
     }
 }
