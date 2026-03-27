@@ -8,4 +8,6 @@ public record Lead(
         String company,
         LeadStatus status
 ) {
+    public void thenAnswer(Object o) {
+    }
 }
