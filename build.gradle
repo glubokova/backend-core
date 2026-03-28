@@ -22,6 +22,10 @@ dependencies {
     testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
 }
 
+application {
+    mainClass = 'ru.mentee.power.crm.Main'
+}
+
 checkstyle {
     toolVersion = '10.12.4'
     maxErrors = 0
