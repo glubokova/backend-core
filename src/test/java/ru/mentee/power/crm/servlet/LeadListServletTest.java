@@ -51,9 +51,11 @@ class LeadListServletTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter writer = new PrintWriter(stringWriter);
         when(response.getWriter()).thenReturn(writer);
-        servlet.doGet(request, response);
 
+        servlet.init();
+        servlet.doGet(request, response);
         verify(leadService).findAll();
+        writer.flush();
 
         String output = stringWriter.toString();
 
@@ -67,13 +69,10 @@ class LeadListServletTest {
     void shouldSetContentTypeToHtmlWhenDoGetCalled() throws Exception {
         when(leadService.findAll()).thenReturn(List.of());
         when(context.getAttribute("leadService")).thenReturn(leadService);
-        when(request.getServletContext()).thenReturn(context);
+        when(response.getWriter()).thenReturn(new PrintWriter(new StringWriter()));
 
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter writer = new PrintWriter(stringWriter);
-        when(response.getWriter()).thenReturn(writer);
-        when(request.getMethod()).thenReturn("GET");
-        servlet.service(request, response);
+        servlet.init();
+        servlet.doGet(request, response);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(response).setContentType(captor.capture());

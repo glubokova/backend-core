@@ -3,6 +3,7 @@ plugins {
     id 'application'
     id 'checkstyle'
     id 'jacoco'
+    id 'gg.jte.gradle' version '3.2.1'
 }
 
 group = 'ru.mentee.power'
@@ -15,6 +16,7 @@ repositories {
 ext {
     servletVersion = '6.1.0'
     tomcatVersion = '11.0.18'
+    jteVersion = '3.2.1'
 }
 
 dependencies {
@@ -25,12 +27,20 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.mockito:mockito-core:5.+'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.+'
-    compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")
-    implementation("org.apache.tomcat.embed:tomcat-embed-core:11.0.18")
+    compileOnly("jakarta.servlet:jakarta.servlet-api:${servletVersion}")
+    implementation("org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}")
+    implementation "gg.jte:jte:${jteVersion}"
+    implementation "gg.jte:jte-runtime:${jteVersion}"
 }
 
 application {
     mainClass = 'ru.mentee.power.crm.Main'
+}
+
+jte {
+    sourceDirectory = project.file("src/main/jte").toPath()
+    contentType = "Html"
+    binaryStaticContent = false
 }
 
 checkstyle {
