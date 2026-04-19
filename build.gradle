@@ -4,8 +4,8 @@ plugins {
     id 'application'
     id 'jacoco'
     id 'gg.jte.gradle' version '3.2.1'
-    id 'org.springframework.boot' version '4.1.0-M3'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '3.3.5'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'ru.mentee.power'
@@ -17,27 +17,29 @@ repositories {
 
 ext {
     servletVersion = '6.1.0'
-    tomcatVersion = '11.0.18'
     jteVersion = '3.2.1'
-    springBootVersion = '4.1.0-M3'
+    tomcatVersion = '11.0.18'
+    springBootVersion = '3.3.5'
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.2'
-    testImplementation("org.assertj:assertj-core:3.27.7")
-    testImplementation 'org.mockito:mockito-core:5.14.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
 
-    compileOnly("jakarta.servlet:jakarta.servlet-api:${servletVersion}")
-    implementation("org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}")
+    compileOnly "jakarta.servlet:jakarta.servlet-api:${servletVersion}"
     implementation "gg.jte:jte:${jteVersion}"
     implementation "gg.jte:jte-runtime:${jteVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    implementation 'gg.jte:jte-spring-boot-starter-3:3.2.1'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
+    testImplementation 'org.assertj:assertj-core:3.27.7'
+    testImplementation 'org.mockito:mockito-core:5.14.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
 }
 
 application {
-    mainClass = 'ru.mentee.power.crm.Main'
+    mainClass = 'ru.mentee.power.crm.spring.Application'
 }
 
 springBoot {
@@ -45,7 +47,7 @@ springBoot {
 }
 
 bootRun {
-    mainClass = 'ru.mentee.power.crm.spring.Application'
+    mainClass = 'ru.mentee.power.crm.Application'
 }
 
 jte {
@@ -53,6 +55,14 @@ jte {
     contentType = "Html"
     binaryStaticContent = false
 }
+
+task copyJteTemplates(type: Copy) {
+    description = 'Копирует JTE шаблоны из jte в resources для Spring'
+    from 'src/main/jte'
+    into 'src/main/resources/jte'
+    include '**/*.jte'
+}
+
 
 checkstyle {
     toolVersion = '10.12.4'

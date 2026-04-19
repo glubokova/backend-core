@@ -1,5 +1,6 @@
 package ru.mentee.power.crm.repository;
 
+import org.springframework.stereotype.Repository;
 import ru.mentee.power.crm.model.Lead;
 
 import java.util.Optional;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
+@Repository
 public class InMemoryLeadRepository implements LeadRepository {
 
     private final Map<UUID, Lead> storage = new HashMap<>();
