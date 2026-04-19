@@ -22,6 +22,12 @@ ext {
     springBootVersion = '3.3.5'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 dependencies {
 
     compileOnly "jakarta.servlet:jakarta.servlet-api:${servletVersion}"
