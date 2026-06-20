@@ -45,15 +45,11 @@ dependencies {
 }
 
 application {
-    mainClass = 'ru.mentee.power.crm.spring.Application'
+    mainClass = 'ru.mentee.power.crm.Main'
 }
 
 springBoot {
     mainClass = 'ru.mentee.power.crm.spring.Application'
-}
-
-bootRun {
-    mainClass = 'ru.mentee.power.crm.Application'
 }
 
 jte {
