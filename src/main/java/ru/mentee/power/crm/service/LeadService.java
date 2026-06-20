@@ -5,6 +5,7 @@ import ru.mentee.power.crm.model.Lead;
 import ru.mentee.power.crm.model.LeadStatus;
 import ru.mentee.power.crm.repository.LeadRepository;
 
+import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
@@ -36,6 +37,13 @@ public class LeadService {
 
     public List<Lead> findAll() {
         return repository.findAll();
+    }
+
+    public List<Lead> findByStatus(LeadStatus status) {
+        return repository.findAll()
+                .stream()
+                .filter(lead -> lead.status().equals(status))
+                .collect(Collectors.toList());
     }
 
     public Optional<Lead> findById(UUID id) {

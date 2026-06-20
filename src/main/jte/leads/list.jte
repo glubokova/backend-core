@@ -1,8 +1,33 @@
 @param java.util.List<ru.mentee.power.crm.model.Lead> leads
-
+@param ru.mentee.power.crm.model.LeadStatus currentFilter
 @template.layout.main(content = @`
     <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-2xl font-bold mb-4">Lead List</h2>
+        <div class="mb-4 flex gap-2">
+
+            <a href="/leads">
+                Все
+            </a>
+
+            <a href="/leads?status=NEW">
+                NEW
+            </a>
+
+            <a href="/leads?status=CONTACTED">
+                CONTACTED
+            </a>
+
+            <a href="/leads?status=QUALIFIED">
+                QUALIFIED
+            </a>
+
+        </div>
+
+        @if(currentFilter != null)
+            <p>
+                Показаны лиды со статусом: ${currentFilter}
+            </p>
+        @endif
 
         <table class="min-w-full bg-white border border-gray-200">
             <thead class="bg-gray-100">
