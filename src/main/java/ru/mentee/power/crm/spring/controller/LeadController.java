@@ -19,6 +19,10 @@ public class LeadController {
     @GetMapping("/leads")
     public String showLeads(Model model) {
         List<Lead> leads = leadService.findAll();
+        System.out.println(
+                "CONTROLLER COUNT = "
+                        + leads.size()
+        );
         model.addAttribute("leads", leads);
         return "leads/list";
     }
