@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 class LeadServiceTest {
 
@@ -76,6 +76,85 @@ class LeadServiceTest {
     @Test
     void shouldReturnEmptyWhenLeadNotFound() {
         Optional<Lead> result = service.findByEmail("nonexistent@example.com");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldReturnOnlyNewLeadsWhenFindByStatusNew() {
+        service.addLead("new1@test.com", "A", LeadStatus.NEW);
+        service.addLead("new2@test.com", "B", LeadStatus.NEW);
+        service.addLead("new3@test.com", "C", LeadStatus.CONTACTED);
+        service.addLead("new4@test.com", "D", LeadStatus.QUALIFIED);
+
+        List<Lead> result =
+                service.findByStatus(LeadStatus.NEW);
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .allMatch(
+                        lead -> lead.status()
+                                .equals(LeadStatus.NEW)
+                );
+    }
+
+    @Test
+    void shouldReturnOnlyContactedLeadsWhenFindByStatusContacted() {
+        service.addLead("new@test.com", "A", LeadStatus.NEW);
+        service.addLead("cont1@test.com", "B", LeadStatus.CONTACTED);
+        service.addLead("cont2@test.com", "C", LeadStatus.CONTACTED);
+
+        List<Lead> result =
+                service.findByStatus(
+                        LeadStatus.CONTACTED
+                );
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .allMatch(
+                        lead -> lead.status()
+                                .equals(
+                                        LeadStatus.CONTACTED
+                                )
+                );
+    }
+
+    @Test
+    void shouldReturnOnlyQualifiedLeadsWhenFindByStatusQualified() {
+        service.addLead("new@test.com", "A", LeadStatus.NEW);
+        service.addLead("qual@test.com", "B", LeadStatus.QUALIFIED);
+
+        List<Lead> result =
+                service.findByStatus(
+                        LeadStatus.QUALIFIED
+                );
+
+        assertThat(result).hasSize(1);
+
+        assertThat(result)
+                .allMatch(
+                        lead -> lead.status()
+                                .equals(
+                                        LeadStatus.QUALIFIED
+                                )
+                );
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoLeadsWithStatus() {
+        service.addLead(
+                "new@test.com",
+                "A",
+                LeadStatus.NEW
+        );
+
+        service.addLead(
+                "cont@test.com",
+                "B",
+                LeadStatus.CONTACTED
+        );
+
+        List<Lead> result =
+                service.findByStatus(
+                        LeadStatus.QUALIFIED
+                );
         assertThat(result).isEmpty();
     }
 }
