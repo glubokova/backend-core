@@ -8,9 +8,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled("Requires manually started Servlet and Spring Boot servers")
 class StackComparisonTest {
 
     private static final int SERVLET_PORT = 8080;
